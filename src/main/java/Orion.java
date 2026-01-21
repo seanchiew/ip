@@ -6,7 +6,7 @@ public class Orion {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        ArrayList<String> tasks = new ArrayList<>();
+        ArrayList<Task> tasks = new ArrayList<>();
 
         // Greet
         System.out.println(LINE);
@@ -17,13 +17,15 @@ public class Orion {
         while (true) {
             String userInput = scanner.nextLine();
 
+            // Exit condition
             if (userInput.equals("bye")) {
                 break;
             }
 
+            // List command
             if (userInput.equals("list")) {
-                // List all stored tasks
                 System.out.println(LINE);
+                System.out.println("    Here are the tasks in your list:");
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println("    " + (i + 1) + ". " + tasks.get(i));
                 }
@@ -31,7 +33,45 @@ public class Orion {
                 continue;
             }
 
-            tasks.add(userInput);
+            // Mark command
+            if (userInput.startsWith("mark ")) {
+                System.out.println(LINE);
+                try {
+                    int taskNumber = Integer.parseInt(userInput.substring(5).trim());
+                    int index = taskNumber - 1; // convert to 0-based index
+
+                    tasks.get(index).markDone();
+                    System.out.println("    Nice! I've marked this task as done:");
+                    System.out.println("      " + tasks.get(index));
+                } catch (Exception e) {
+                    // Catch bad input or index
+                    System.out.println("    Invalid mark command.");
+                }
+                System.out.println(LINE);
+                continue;
+            }
+
+            // Unmark command
+            if (userInput.startsWith("unmark ")) {
+                System.out.println(LINE);
+                try {
+                    int taskNumber = Integer.parseInt(userInput.substring(7).trim());
+                    int index = taskNumber - 1; // convert to 0-based index
+
+                    tasks.get(index).markUndone();
+                    System.out.println("    OK, I've marked this task as not done yet:");
+                    System.out.println("      " + tasks.get(index));
+                } catch (Exception e) {
+                    // Catch bad input or index
+                    System.out.println("    Invalid unmark command.");
+                }
+                System.out.println(LINE);
+                continue;
+            }
+
+            // Add new task
+            Task newTask = new Task(userInput);
+            tasks.add(newTask);
 
             System.out.println(LINE);
             System.out.println("    added: " + userInput);
