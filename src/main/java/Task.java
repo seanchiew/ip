@@ -24,10 +24,19 @@ public class Task {
         this.isDone = false;
     }
 
-    /** Returns a user-friendly representation, e.g [X] read book */
+    /** Returns "X" if done, otherwise " " */
+    protected String getStatusIcon() {
+        return isDone ? "X" : " ";
+    }
+
+    /** Returns the description text of this task. */
+    protected String getDescription() {
+        return description;
+    }
+
+    /** Base task representation, e.g. [X] read book */
     @Override
     public String toString() {
-        String statusIcon = isDone ? "X" : " ";
-        return "[" + statusIcon + "] " + description;
+        return "[" + getStatusIcon() + "] " + getDescription();
     }
 }

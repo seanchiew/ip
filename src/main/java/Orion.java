@@ -3,9 +3,9 @@ import java.util.Scanner;
 
 public class Orion {
     private static final String LINE = "    ____________________________________________________________";
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-
         ArrayList<Task> tasks = new ArrayList<>();
 
         // Greet
@@ -69,12 +69,67 @@ public class Orion {
                 continue;
             }
 
-            // Add new task
-            Task newTask = new Task(userInput);
+            // Else, command is a "add-new-task" command
+            Task newTask;
+
+            if (userInput.startsWith("todo ")) {
+                // todo <desc>
+                String description = userInput.substring(5).trim();
+                newTask = new Todo(description);
+
+            } else if (userInput.startsWith("deadline ")) {
+                // deadline <desc> /by <by>
+                String rest = userInput.substring(9).trim();
+                String[] parts = rest.split(" /by ", 2);
+
+                if (parts.length < 2) {
+                    System.out.println(LINE);
+                    System.out.println("    Invalid deadline command.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                String description = parts[0].trim();
+                String by = parts[1].trim();
+                newTask = new Deadline(description, by);
+
+            } else if (userInput.startsWith("event ")) {
+                // event <desc> /from <from> /to <to>
+                String rest = userInput.substring(6).trim();
+                String[] fromSplit = rest.split(" /from ", 2);
+
+                if (fromSplit.length < 2) {
+                    System.out.println(LINE);
+                    System.out.println("    Invalid event command.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                String description = fromSplit[0].trim();
+                String[] toSplit = fromSplit[1].split(" /to ", 2);
+
+                if (toSplit.length < 2) {
+                    System.out.println(LINE);
+                    System.out.println("    Invalid event command.");
+                    System.out.println(LINE);
+                    continue;
+                }
+
+                String from = toSplit[0].trim();
+                String to = toSplit[1].trim();
+                newTask = new Event(description, from, to);
+
+            } else {
+                // Just treat as a Todo
+                newTask = new Todo(userInput.trim());
+            }
+
             tasks.add(newTask);
 
             System.out.println(LINE);
-            System.out.println("    added: " + userInput);
+            System.out.println("    Got it. I've added this task:");
+            System.out.println("      " + newTask);
+            System.out.println("    Now you have " + tasks.size() + " tasks in the list.");
             System.out.println(LINE);
         }
 
