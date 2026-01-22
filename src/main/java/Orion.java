@@ -49,6 +49,7 @@ public class Orion {
                     handleMarkUnmark(rest, tasks, false);
                     break;
 
+                // Task creation
                 case "todo":
                 case "deadline":
                 case "event":
@@ -56,10 +57,15 @@ public class Orion {
                     tasks.add(newTask);
                     printAddSuccess(newTask, tasks.size());
                     break;
+                
+                // Task deletion
+                case "delete":
+                    handleDelete(rest, tasks);
+                    break;
 
                 default:
                     throw new OrionException(
-                            "I don't know what that means. Try: todo, deadline, event, list, mark, unmark, bye"
+                            "I don't know what that means. Try: todo, deadline, event, list, mark, unmark, delete, bye"
                     );
                 }
 
@@ -102,6 +108,17 @@ public class Orion {
         }
         System.out.println(TASK_INDENT + task);
         printLine();
+    }
+
+    private static void handleDelete(String rest, ArrayList<Task> tasks) throws OrionException {
+        int index = parseTaskIndex(rest, "delete", tasks.size());
+        Task removed = tasks.remove(index);
+
+        printLine();
+        printIndented("Noted. I've removed this task:");
+        System.out.println(TASK_INDENT + removed);
+        printIndented("Now you have " + tasks.size() + " tasks in the list.");
+        printLine(); 
     }
 
     // -------------------- Parsing helpers --------------------
