@@ -2,8 +2,8 @@ mark 1
 todo
 blah
 todo read book
-deadline return book /by Sunday
-event project meeting /from Mon 2pm /to 4pm
+deadline return book /by 2019-10-15
+event project meeting /from 2019-10-15 1800 /to 2019-10-18 2000
 list
 mark 2
 unmark 2

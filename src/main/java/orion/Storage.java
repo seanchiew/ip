@@ -6,6 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,18 +95,29 @@ public class Storage {
         case "T":
             task = new Todo(description);
             break;
+
         case "D":
-            if (parts.length < 4) {
-                throw new OrionException("Saved data is corrupted: " + line);
-            }
-            task = new Deadline(description, parts[3]);
-            break;
-        case "E":
+            // Expected: D | done | desc | date | timeOrDash
             if (parts.length < 5) {
                 throw new OrionException("Saved data is corrupted: " + line);
             }
-            task = new Event(description, parts[3], parts[4]);
+            LocalDate byDate = parseStoredDate(parts[3], line);
+            LocalTime byTime = parseStoredTimeOrNull(parts[4], line);
+            task = new Deadline(description, byDate, byTime);
             break;
+
+        case "E":
+            // Expected: E | done | desc | fromDate | fromTimeOrDash | toDate | toTimeOrDash
+            if (parts.length < 7) {
+                throw new OrionException("Saved data is corrupted: " + line);
+            }
+            LocalDate fromDate = parseStoredDate(parts[3], line);
+            LocalTime fromTime = parseStoredTimeOrNull(parts[4], line);
+            LocalDate toDate = parseStoredDate(parts[5], line);
+            LocalTime toTime = parseStoredTimeOrNull(parts[6], line);
+            task = new Event(description, fromDate, fromTime, toDate, toTime);
+            break;
+
         default:
             throw new OrionException("Saved data is corrupted: " + line);
         }
@@ -123,4 +137,25 @@ public class Storage {
         }
         throw new OrionException("Saved data is corrupted: invalid done flag " + raw);
     }
+
+    private static LocalDate parseStoredDate(String raw, String line) throws OrionException {
+        try {
+            return LocalDate.parse(raw.trim());
+        } catch (DateTimeParseException e) {
+            throw new OrionException("Saved data is corrupted: " + line);
+        }
+    }
+
+    private static LocalTime parseStoredTimeOrNull(String raw, String line) throws OrionException {
+        String trimmed = raw.trim();
+        if ("-".equals(trimmed)) {
+            return null;
+        }
+        try {
+            return LocalTime.parse(trimmed);
+        } catch (DateTimeParseException e) {
+            throw new OrionException("Saved data is corrupted: " + line);
+        }
+    }
+
 }
