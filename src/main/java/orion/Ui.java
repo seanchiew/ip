@@ -30,7 +30,9 @@ public class Ui {
         return scanner.nextLine().trim();
     }
 
-    /** Prints the greeting message. */
+    /** 
+     * Prints the greeting message. 
+     */
     public void showWelcome() {
         showLine();
         showIndented("Hello! I'm Orion");
@@ -38,7 +40,9 @@ public class Ui {
         showLine();
     }
 
-    /** Prints the exit message. */
+    /** 
+     * Prints the exit message. 
+     */
     public void showBye() {
         showLine();
         showIndented("Bye. Hope to see you again soon!");
@@ -115,7 +119,9 @@ public class Ui {
         showLine();
     }
 
-    /** Closes the underlying scanner. */
+    /** 
+     * Closes the underlying scanner. 
+     */
     public void close() {
         scanner.close();
     }

@@ -17,12 +17,16 @@ public class Task {
         this.isDone = false;
     }
 
-    /** Marks this task as done. */
+    /** 
+     * Marks this task as done. 
+     */
     public void markDone() {
         this.isDone = true;
     }
 
-    /** Marks this task as not done. */
+    /** 
+     * Marks this task as not done. 
+     */
     public void markUndone() {
         this.isDone = false;
     }
