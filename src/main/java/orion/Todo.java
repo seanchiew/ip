@@ -14,6 +14,11 @@ public class Todo extends Task {
         super(description);
     }
 
+    @Override
+    public String toDataString() {
+        return "T | " + getDoneFlag() + " | " + getDescription();
+    }
+
     /**
      * {@inheritDoc}
      * Returns a string representation prefixed with {@code [T]}.

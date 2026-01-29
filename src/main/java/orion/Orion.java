@@ -19,7 +19,15 @@ public class Orion {
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+
+        Storage storage = new Storage();
         ArrayList<Task> tasks = new ArrayList<>();
+
+        try {
+            tasks = storage.load();
+        } catch (OrionException e) {
+            printError(e.getMessage());
+        }
 
         // Greet
         printLine();
@@ -54,10 +62,12 @@ public class Orion {
 
                 case "mark":
                     handleMarkUnmark(rest, tasks, true);
+                    storage.save(tasks);
                     break;
 
                 case "unmark":
                     handleMarkUnmark(rest, tasks, false);
+                    storage.save(tasks);
                     break;
 
                 // Task creation
@@ -67,11 +77,13 @@ public class Orion {
                     Task newTask = parseTask(cmd, rest);
                     tasks.add(newTask);
                     printAddSuccess(newTask, tasks.size());
+                    storage.save(tasks);
                     break;
                 
                 // Task deletion
                 case "delete":
                     handleDelete(rest, tasks);
+                    storage.save(tasks);
                     break;
 
                 default:
@@ -93,7 +105,7 @@ public class Orion {
 
     // -------------------- Command handlers --------------------
 
-    /** Handle list command */
+    // Handles list command
     private static void handleList(ArrayList<Task> tasks) {
         printLine();
         printIndented("Here are the tasks in your list:");
@@ -103,7 +115,7 @@ public class Orion {
         printLine();
     }
 
-    /** Handle mark/unmark command (rest should contain the task number) */
+    // Handles mark/unmark command (rest should contain the task number)
     private static void handleMarkUnmark(String rest, ArrayList<Task> tasks, boolean isMark) throws OrionException {
         int index = parseTaskIndex(rest, isMark ? "mark" : "unmark", tasks.size());
         Task task = tasks.get(index);
@@ -120,6 +132,7 @@ public class Orion {
         printLine();
     }
 
+    // Handles delete command
     private static void handleDelete(String rest, ArrayList<Task> tasks) throws OrionException {
         int index = parseTaskIndex(rest, "delete", tasks.size());
         Task removed = tasks.remove(index);
@@ -133,7 +146,7 @@ public class Orion {
 
     // -------------------- Parsing helpers --------------------
 
-    /** Returns 0-based index of task in tasks list based on rest arg (task number), 1-based from user */
+    // Returns 0-based index of task in tasks list based on rest arg (task number), 1-based from user
     private static int parseTaskIndex(String rest, String keyword, int taskCount) throws OrionException {
         if (taskCount == 0) {
             throw new OrionException("There are no tasks to " + keyword + ". Add a task first.");
@@ -157,7 +170,7 @@ public class Orion {
         return taskNumber - 1; // convert to 0-based index
     }
 
-    /** Parse task creation commands */
+    // Parses task creation commands
     private static Task parseTask(String cmd, String rest) throws OrionException {
         switch (cmd) {
         case "todo": {

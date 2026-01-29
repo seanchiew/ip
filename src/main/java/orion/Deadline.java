@@ -17,6 +17,11 @@ public class Deadline extends Task {
         this.by = by;
     }
 
+    @Override
+    public String toDataString() {
+        return "D | " + getDoneFlag() + " | " + getDescription() + " | " + by;
+    }
+
     /**
      * {@inheritDoc}
      * Returns a string representation including the deadline information.

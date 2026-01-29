@@ -20,6 +20,11 @@ public class Event extends Task {
         this.to = to;
     }
 
+    @Override
+    public String toDataString() {
+        return "E | " + getDoneFlag() + " | " + getDescription() + " | " + from + " | " + to;
+    }
+
     /**
      * {@inheritDoc}
      * Returns a string representation including the event time period.
