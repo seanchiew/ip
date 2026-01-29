@@ -94,4 +94,20 @@ public class TaskList {
     public List<Task> asUnmodifiableList() {
         return Collections.unmodifiableList(tasks);
     }
+
+    /**
+     * Returns tasks whose descriptions contain the given keyword (case-insensitive).
+     *
+     * @param keyword Keyword to search for.
+     * @return List of matching tasks, in the same order as the task list.
+     */
+    public List<Task> find(String keyword) {
+        List<Task> matches = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.matches(keyword)) {
+                matches.add(task);
+            }
+        }
+        return matches;
+    }
 }

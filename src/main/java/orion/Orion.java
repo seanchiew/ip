@@ -93,6 +93,12 @@ public class Orion {
             break;
         }
 
+        case "find": {
+            String keyword = Parser.parseFindKeyword(arguments);
+            ui.showFindResults(tasks.find(keyword));
+            break;
+        }
+
         case "todo":
         case "deadline":
         case "event": {

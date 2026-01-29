@@ -235,4 +235,20 @@ public class Parser {
             throw new OrionException("Invalid time. " + usage);
         }
     }
+
+    /**
+     * Parses the keyword for the {@code find} command.
+     *
+     * @param arguments Raw arguments after {@code find}.
+     * @return Trimmed keyword.
+     * @throws OrionException If the keyword is missing.
+     */
+    public static String parseFindKeyword(String arguments) throws OrionException {
+        String keyword = arguments == null ? "" : arguments.trim();
+        if (keyword.isEmpty()) {
+            throw new OrionException("Usage: find <keyword>");
+        }
+        return keyword;
+    }
+
 }
