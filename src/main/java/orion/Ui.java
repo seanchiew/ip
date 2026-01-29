@@ -115,7 +115,9 @@ public class Ui {
         showLine();
     }
 
-    /** Closes the underlying scanner. */
+    /** 
+     * Closes the underlying scanner. 
+     */
     public void close() {
         scanner.close();
     }
