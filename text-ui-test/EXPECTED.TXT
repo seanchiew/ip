@@ -18,40 +18,40 @@
     ____________________________________________________________
     ____________________________________________________________
     Got it. I've added this task:
-      [D][ ] return book (by: Sunday)
+      [D][ ] return book (by: Oct 15 2019)
     Now you have 2 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
     Got it. I've added this task:
-      [E][ ] project meeting (from: Mon 2pm to: 4pm)
+      [E][ ] project meeting (from: Oct 15 2019 18:00 to: Oct 18 2019 20:00)
     Now you have 3 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
     Here are the tasks in your list:
     1. [T][ ] read book
-    2. [D][ ] return book (by: Sunday)
-    3. [E][ ] project meeting (from: Mon 2pm to: 4pm)
+    2. [D][ ] return book (by: Oct 15 2019)
+    3. [E][ ] project meeting (from: Oct 15 2019 18:00 to: Oct 18 2019 20:00)
     ____________________________________________________________
     ____________________________________________________________
     Nice! I've marked this task as done:
-      [D][X] return book (by: Sunday)
+      [D][X] return book (by: Oct 15 2019)
     ____________________________________________________________
     ____________________________________________________________
     OK, I've marked this task as not done yet:
-      [D][ ] return book (by: Sunday)
+      [D][ ] return book (by: Oct 15 2019)
     ____________________________________________________________
     ____________________________________________________________
     Please enter a command.
     ____________________________________________________________
     ____________________________________________________________
     Noted. I've removed this task:
-      [E][ ] project meeting (from: Mon 2pm to: 4pm)
+      [E][ ] project meeting (from: Oct 15 2019 18:00 to: Oct 18 2019 20:00)
     Now you have 2 tasks in the list.
     ____________________________________________________________
     ____________________________________________________________
     Here are the tasks in your list:
     1. [T][ ] read book
-    2. [D][ ] return book (by: Sunday)
+    2. [D][ ] return book (by: Oct 15 2019)
     ____________________________________________________________
     ____________________________________________________________
     Usage: delete <taskNumber>
@@ -81,13 +81,13 @@
     Task number must be between 1 and 2.
     ____________________________________________________________
     ____________________________________________________________
-    A deadline needs '/by'. Usage: deadline <description> /by <time>
+    A deadline needs '/by'. Usage: deadline <description> /by yyyy-MM-dd [HHmm|HH:mm]
     ____________________________________________________________
     ____________________________________________________________
-    An event needs '/from'. Usage: event <description> /from <start> /to <end>
+    An event needs '/from'. Usage: event <description> /from yyyy-MM-dd [HHmm|HH:mm] /to yyyy-MM-dd [HHmm|HH:mm]
     ____________________________________________________________
     ____________________________________________________________
-    An event needs '/to'. Usage: event <description> /from <start> /to <end>
+    An event needs '/to'. Usage: event <description> /from yyyy-MM-dd [HHmm|HH:mm] /to yyyy-MM-dd [HHmm|HH:mm]
     ____________________________________________________________
     ____________________________________________________________
     Bye. Hope to see you again soon!

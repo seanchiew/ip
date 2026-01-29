@@ -3,6 +3,10 @@ package orion;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+
 /**
  * Provides the entry point for the Orion command-line task application.
  * Reads commands from standard input and writes responses to standard output.
@@ -11,6 +15,17 @@ public class Orion {
     private static final String INDENT = "    ";
     private static final String TASK_INDENT = "      ";
     private static final String LINE = INDENT + "____________________________________________________________";
+
+
+    private static final class DateTimeParts {
+        private final LocalDate date;
+        private final LocalTime time; // null if not provided
+
+        private DateTimeParts(LocalDate date, LocalTime time) {
+            this.date = date;
+            this.time = time;
+        }
+    }
 
     /**
      * Runs the Orion application.
@@ -188,22 +203,25 @@ public class Orion {
             String[] parts = rest.split("\\s+/by\\s+", 2);
             if (parts.length < 2) {
                 throw new OrionException("A deadline needs '/by'. "
-                        + "Usage: deadline <description> /by <time>");
+                        + "Usage: deadline <description> /by yyyy-MM-dd [HHmm|HH:mm]");
             }
 
             String description = parts[0].trim();
-            String by = parts[1].trim();
+            String byRaw = parts[1].trim();
 
             if (description.isEmpty()) {
                 throw new OrionException("Deadline description cannot be empty. "
-                        + "Usage: deadline <description> /by <time>");
+                        + "Usage: deadline <description> /by yyyy-MM-dd [HHmm|HH:mm]");
             }
-            if (by.isEmpty()) {
-                throw new OrionException("Deadline time cannot be empty. "
-                        + "Usage: deadline <description> /by <time>");
+            if (byRaw.isEmpty()) {
+                throw new OrionException("Deadline date/time cannot be empty. "
+                        + "Usage: deadline <description> /by yyyy-MM-dd [HHmm|HH:mm]");
             }
 
-            return new Deadline(description, by);
+            DateTimeParts by = parseUserDateTime(byRaw,
+                    "Usage: deadline <description> /by yyyy-MM-dd [HHmm|HH:mm] (e.g. 2019-10-15 1800)");
+
+            return new Deadline(description, by.date, by.time);
         }
 
         case "event": {
@@ -214,33 +232,81 @@ public class Orion {
             String[] fromSplit = rest.split("\\s+/from\\s+", 2);
             if (fromSplit.length < 2) {
                 throw new OrionException("An event needs '/from'. "
-                        + "Usage: event <description> /from <start> /to <end>");
+                    + "Usage: event <description> /from yyyy-MM-dd [HHmm|HH:mm] /to yyyy-MM-dd [HHmm|HH:mm]");
             }
 
             String description = fromSplit[0].trim();
             String[] toSplit = fromSplit[1].split("\\s+/to\\s+", 2);
             if (toSplit.length < 2) {
                 throw new OrionException("An event needs '/to'. "
-                        + "Usage: event <description> /from <start> /to <end>");
+                        + "Usage: event <description> /from yyyy-MM-dd [HHmm|HH:mm] /to yyyy-MM-dd [HHmm|HH:mm]");
             }
 
-            String from = toSplit[0].trim();
-            String to = toSplit[1].trim();
+            String fromRaw = toSplit[0].trim();
+            String toRaw = toSplit[1].trim();
 
             if (description.isEmpty()) {
                 throw new OrionException("Event description cannot be empty. "
-                        + "Usage: event <description> /from <start> /to <end>");
+                        + "Usage: event <description> /from ... /to ...");
             }
-            if (from.isEmpty() || to.isEmpty()) {
-                throw new OrionException("Event time cannot be empty. "
-                        + "Usage: event <description> /from <start> /to <end>");
+            if (fromRaw.isEmpty() || toRaw.isEmpty()) {
+                throw new OrionException("Event date/time cannot be empty. "
+                        + "Usage: event <description> /from ... /to ...");
             }
 
-            return new Event(description, from, to);
+            DateTimeParts from = parseUserDateTime(fromRaw,
+                    "Usage: event <description> /from yyyy-MM-dd [HHmm|HH:mm] /to yyyy-MM-dd [HHmm|HH:mm]");
+            DateTimeParts to = parseUserDateTime(toRaw,
+                    "Usage: event <description> /from yyyy-MM-dd [HHmm|HH:mm] /to yyyy-MM-dd [HHmm|HH:mm]");
+
+            return new Event(description, from.date, from.time, to.date, to.time);
         }
 
         default:
             throw new OrionException("I don't know what that means.");
+        }
+    }
+
+    private static DateTimeParts parseUserDateTime(String raw, String usage) throws OrionException {
+        String normalized = raw.trim().replace('T', ' ');
+        String[] tokens = normalized.split("\\s+");
+
+        if (tokens.length == 1) {
+            return new DateTimeParts(parseUserDate(tokens[0], usage), null);
+        }
+        if (tokens.length == 2) {
+            LocalDate date = parseUserDate(tokens[0], usage);
+            LocalTime time = parseUserTime(tokens[1], usage);
+            return new DateTimeParts(date, time);
+        }
+
+        throw new OrionException("Invalid date/time. " + usage);
+    }
+
+    private static LocalDate parseUserDate(String token, String usage) throws OrionException {
+        try {
+            // Accepts yyyy-MM-dd
+            return LocalDate.parse(token);
+        } catch (DateTimeParseException e) {
+            throw new OrionException("Invalid date. " + usage);
+        }
+    }
+
+    private static LocalTime parseUserTime(String token, String usage) throws OrionException {
+        // Accept HHmm (e.g. 1800) OR HH:mm (e.g. 18:00)
+        if (token.matches("\\d{4}")) {
+            int hour = Integer.parseInt(token.substring(0, 2));
+            int minute = Integer.parseInt(token.substring(2, 4));
+            if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                throw new OrionException("Invalid time. " + usage);
+            }
+            return LocalTime.of(hour, minute);
+        }
+
+        try {
+            return LocalTime.parse(token); // accepts HH:mm
+        } catch (DateTimeParseException e) {
+            throw new OrionException("Invalid time. " + usage);
         }
     }
 
