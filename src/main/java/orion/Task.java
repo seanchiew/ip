@@ -37,6 +37,17 @@ public class Task {
     }
 
     /**
+     * Returns {@code true} if this task's description contains the given keyword (case-insensitive).
+     *
+     * @param keyword Keyword to search for.
+     * @return {@code true} if the keyword is found in the description.
+     */
+    public boolean matches(String keyword) {
+        String needle = keyword == null ? "" : keyword.trim().toLowerCase();
+        return !needle.isEmpty() && description.toLowerCase().contains(needle);
+    }
+
+    /**
      * Returns the done flag as {@code "1"} if done, else {@code "0"}.
      *
      * @return Done flag string.

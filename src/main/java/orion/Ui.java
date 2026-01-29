@@ -1,5 +1,6 @@
 package orion;
 
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -112,6 +113,20 @@ public class Ui {
         showIndented("Noted. I've removed this task:");
         System.out.println(TASK_INDENT + task);
         showIndented("Now you have " + size + " tasks in the list.");
+        showLine();
+    }
+
+    /**
+     * Displays tasks that match the {@code find} keyword.
+     *
+     * @param matches Matching tasks to display.
+     */
+    public void showFindResults(List<Task> matches) {
+        showLine();
+        showIndented("Here are the matching tasks in your list:");
+        for (int i = 0; i < matches.size(); i++) {
+            System.out.println(INDENT + (i + 1) + ". " + matches.get(i));
+        }
         showLine();
     }
 
