@@ -1,11 +1,22 @@
+package orion;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
+/**
+ * Provides the entry point for the Orion command-line task application.
+ * Reads commands from standard input and writes responses to standard output.
+ */
 public class Orion {
     private static final String INDENT = "    ";
     private static final String TASK_INDENT = "      ";
     private static final String LINE = INDENT + "____________________________________________________________";
 
+    /**
+     * Runs the Orion application.
+     *
+     * @param args Command-line arguments (not used).
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Task> tasks = new ArrayList<>();
@@ -64,9 +75,8 @@ public class Orion {
                     break;
 
                 default:
-                    throw new OrionException(
-                            "I don't know what that means. Try: todo, deadline, event, list, mark, unmark, delete, bye"
-                    );
+                    throw new OrionException("I don't know what that means. "
+                            + "Try: todo, deadline, event, list, mark, unmark, delete, bye");
                 }
 
             } catch (OrionException e) {
@@ -164,17 +174,20 @@ public class Orion {
 
             String[] parts = rest.split("\\s+/by\\s+", 2);
             if (parts.length < 2) {
-                throw new OrionException("A deadline needs '/by'. Usage: deadline <description> /by <time>");
+                throw new OrionException("A deadline needs '/by'. "
+                        + "Usage: deadline <description> /by <time>");
             }
 
             String description = parts[0].trim();
             String by = parts[1].trim();
 
             if (description.isEmpty()) {
-                throw new OrionException("Deadline description cannot be empty. Usage: deadline <description> /by <time>");
+                throw new OrionException("Deadline description cannot be empty. "
+                        + "Usage: deadline <description> /by <time>");
             }
             if (by.isEmpty()) {
-                throw new OrionException("Deadline time cannot be empty. Usage: deadline <description> /by <time>");
+                throw new OrionException("Deadline time cannot be empty. "
+                        + "Usage: deadline <description> /by <time>");
             }
 
             return new Deadline(description, by);
@@ -187,23 +200,27 @@ public class Orion {
 
             String[] fromSplit = rest.split("\\s+/from\\s+", 2);
             if (fromSplit.length < 2) {
-                throw new OrionException("An event needs '/from'. Usage: event <description> /from <start> /to <end>");
+                throw new OrionException("An event needs '/from'. "
+                        + "Usage: event <description> /from <start> /to <end>");
             }
 
             String description = fromSplit[0].trim();
             String[] toSplit = fromSplit[1].split("\\s+/to\\s+", 2);
             if (toSplit.length < 2) {
-                throw new OrionException("An event needs '/to'. Usage: event <description> /from <start> /to <end>");
+                throw new OrionException("An event needs '/to'. "
+                        + "Usage: event <description> /from <start> /to <end>");
             }
 
             String from = toSplit[0].trim();
             String to = toSplit[1].trim();
 
             if (description.isEmpty()) {
-                throw new OrionException("Event description cannot be empty. Usage: event <description> /from <start> /to <end>");
+                throw new OrionException("Event description cannot be empty. "
+                        + "Usage: event <description> /from <start> /to <end>");
             }
             if (from.isEmpty() || to.isEmpty()) {
-                throw new OrionException("Event time cannot be empty. Usage: event <description> /from <start> /to <end>");
+                throw new OrionException("Event time cannot be empty. "
+                        + "Usage: event <description> /from <start> /to <end>");
             }
 
             return new Event(description, from, to);
