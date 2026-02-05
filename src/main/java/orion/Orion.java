@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Provides the entry point for the Orion command-line task application.
- * Reads commands from standard input and writes responses to standard output.
+ * Core logic for the Orion application.
+ * Provides a getResponse() API for GUI and a run() wrapper for CLI.
  */
 public class Orion {
     private final Storage storage;
     private final TaskList tasks;
     private final Ui ui;
     private final Parser parser;
+
+    private boolean isExit;
 
     /**
      * Constructs an {@code Orion} application using the default storage path.
@@ -20,40 +22,76 @@ public class Orion {
     public Orion() {
         this.storage = new Storage();
         this.parser = new Parser();
-        this.ui = new Ui(new Scanner(System.in));
-        this.tasks = loadTasks(storage, ui);
+        this.ui = new Ui();
+        this.tasks = loadTasks(storage);
+        this.isExit = false;
     }
 
     /**
-     * Runs the Orion application.
+     * Returns the welcome message.
+     *
+     * @return Welcome message string.
      */
-    public void run() {
-        ui.showWelcome();
+    public String getWelcomeMessage() {
+        return ui.formatWelcome();
+    }
 
-        while (true) {
-            String userInput = ui.readCommand();
+    /**
+     * Indicates whether the app should exit (after processing a command).
+     *
+     * @return True if exit was requested.
+     */
+    public boolean isExit() {
+        return isExit;
+    }
 
-            try {
-                Parser.ParsedCommand command = parser.parse(userInput);
-                String commandWord = command.getCommandWord();
-                String arguments = command.getArguments();
+    /**
+     * Handles a single user input and returns Orion's response as a string.
+     *
+     * @param input User input string.
+     * @return Response string to display.
+     */
+    public String getResponse(String input) {
+        String trimmed = (input == null) ? "" : input.trim();
 
-                if (commandWord.equals("bye")) {
-                    break;
-                }
-
-                handleCommand(commandWord, arguments);
-            } catch (OrionException e) {
-                ui.showError(e.getMessage());
-            }
+        if (trimmed.isEmpty()) {
+            return ui.formatError("Please enter a command.");
         }
 
-        ui.showBye();
-        ui.close();
+        try {
+            Parser.ParsedCommand command = parser.parse(trimmed);
+            String commandWord = command.getCommandWord();
+            String arguments = command.getArguments();
+
+            if ("bye".equals(commandWord)) {
+                isExit = true;
+                return ui.formatBye();
+            }
+
+            return executeCommand(commandWord, arguments);
+        } catch (OrionException e) {
+            return ui.formatError(e.getMessage());
+        }
     }
 
     /**
-     * Program entry point.
+     * Runs the Orion CLI application (optional since GUI is present).
+     */
+    public void run() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print(getWelcomeMessage());
+
+        while (!isExit) {
+            String input = scanner.nextLine();
+            String response = getResponse(input);
+            System.out.print(response);
+        }
+
+        scanner.close();
+    }
+
+    /**
+     * Program entry point (CLI).
      *
      * @param args Command-line arguments (not used).
      */
@@ -61,42 +99,38 @@ public class Orion {
         new Orion().run();
     }
 
-    private static TaskList loadTasks(Storage storage, Ui ui) {
+    private static TaskList loadTasks(Storage storage) {
         try {
             ArrayList<Task> loaded = storage.load();
             return new TaskList(loaded);
         } catch (OrionException e) {
-            ui.showError(e.getMessage());
+            // If loading fails, start with empty task list.
             return new TaskList();
         }
     }
 
-    private void handleCommand(String commandWord, String arguments) throws OrionException {
+    private String executeCommand(String commandWord, String arguments) throws OrionException {
         switch (commandWord) {
         case "list":
-            ui.showList(tasks);
-            break;
+            return ui.formatList(tasks);
 
         case "mark": {
             int index = parser.parseTaskIndex(arguments, "mark", tasks.size());
             Task task = tasks.markDone(index);
-            ui.showMark(task, true);
             storage.save(tasks.asUnmodifiableList());
-            break;
+            return ui.formatMark(task, true);
         }
 
         case "unmark": {
             int index = parser.parseTaskIndex(arguments, "unmark", tasks.size());
             Task task = tasks.markUndone(index);
-            ui.showMark(task, false);
             storage.save(tasks.asUnmodifiableList());
-            break;
+            return ui.formatMark(task, false);
         }
 
         case "find": {
             String keyword = Parser.parseFindKeyword(arguments);
-            ui.showFindResults(tasks.find(keyword));
-            break;
+            return ui.formatFindResults(tasks.find(keyword));
         }
 
         case "todo":
@@ -104,17 +138,15 @@ public class Orion {
         case "event": {
             Task newTask = parser.parseTask(commandWord, arguments);
             tasks.add(newTask);
-            ui.showAdd(newTask, tasks.size());
             storage.save(tasks.asUnmodifiableList());
-            break;
+            return ui.formatAdd(newTask, tasks.size());
         }
 
         case "delete": {
             int index = parser.parseTaskIndex(arguments, "delete", tasks.size());
             Task removed = tasks.remove(index);
-            ui.showDelete(removed, tasks.size());
             storage.save(tasks.asUnmodifiableList());
-            break;
+            return ui.formatDelete(removed, tasks.size());
         }
 
         default:
