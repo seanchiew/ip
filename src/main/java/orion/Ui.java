@@ -1,151 +1,148 @@
 package orion;
 
 import java.util.List;
-import java.util.Scanner;
 
 /**
- * Handles interactions with the user via standard input and output.
+ * Formats responses shown to the user.
+ * This class does not read input or print output; it only returns Strings.
  */
 public class Ui {
     private static final String INDENT = "    ";
     private static final String TASK_INDENT = "      ";
-    private static final String LINE = INDENT + "____________________________________________________________";
-
-    private final Scanner scanner;
-
-    /**
-     * Constructs a {@code Ui} that reads user input from the given scanner.
-     *
-     * @param scanner Scanner to read input from.
-     */
-    public Ui(Scanner scanner) {
-        this.scanner = scanner;
-    }
+    private static final String LINE = INDENT
+            + "_______________________________________________________";
+    private static final String LS = System.lineSeparator();
 
     /**
-     * Reads the next line of user input.
+     * Returns the greeting message.
      *
-     * @return Trimmed user input.
+     * @return Welcome message string.
      */
-    public String readCommand() {
-        return scanner.nextLine().trim();
-    }
-
-    /** 
-     * Prints the greeting message. 
-     */
-    public void showWelcome() {
-        showLine();
-        showIndented("Hello! I'm Orion");
-        showIndented("What can I do for you?");
-        showLine();
-    }
-
-    /** 
-     * Prints the exit message. 
-     */
-    public void showBye() {
-        showLine();
-        showIndented("Bye. Hope to see you again soon!");
-        showLine();
+    public String formatWelcome() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("Hello! I'm Orion").append(LS);
+        sb.append(INDENT).append("What can I do for you?").append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 
     /**
-     * Prints an error message.
+     * Returns the exit message.
      *
-     * @param message Error message to print.
+     * @return Bye message string.
      */
-    public void showError(String message) {
-        showLine();
-        showIndented(message);
-        showLine();
+    public String formatBye() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("Bye. Hope to see you again soon!").append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 
     /**
-     * Prints the list of tasks.
+     * Returns a formatted error message.
      *
-     * @param tasks Task list to display.
+     * @param message Error message.
+     * @return Error message string.
      */
-    public void showList(TaskList tasks) {
-        showLine();
-        showIndented("Here are the tasks in your list:");
+    public String formatError(String message) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append(message).append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
+    }
+
+    /**
+     * Returns the formatted task list.
+     *
+     * @param tasks TaskList to display.
+     * @return Task list string.
+     */
+    public String formatList(TaskList tasks) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("Here are the tasks in your list:").append(LS);
+
         for (int i = 0; i < tasks.size(); i++) {
-            System.out.println(INDENT + (i + 1) + ". " + tasks.get(i));
+            sb.append(INDENT).append(i + 1).append(". ").append(tasks.get(i)).append(LS);
         }
-        showLine();
+
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 
     /**
-     * Prints a success message after adding a task.
+     * Returns a formatted success message after adding a task.
      *
-     * @param task Task that was added.
-     * @param size New size of the task list.
+     * @param task Added task.
+     * @param size New list size.
+     * @return Add success message string.
      */
-    public void showAdd(Task task, int size) {
-        showLine();
-        showIndented("Got it. I've added this task:");
-        System.out.println(TASK_INDENT + task);
-        showIndented("Now you have " + size + " tasks in the list.");
-        showLine();
+    public String formatAdd(Task task, int size) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("Got it. I've added this task:").append(LS);
+        sb.append(TASK_INDENT).append(task).append(LS);
+        sb.append(INDENT).append("Now you have ").append(size)
+                .append(" tasks in the list.").append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 
     /**
-     * Prints a message after marking or unmarking a task.
+     * Returns a formatted message after marking/unmarking a task.
      *
-     * @param task Task that was updated.
+     * @param task Updated task.
      * @param isMark True if marking done, false if unmarking.
+     * @return Mark/unmark message string.
      */
-    public void showMark(Task task, boolean isMark) {
-        showLine();
-        if (isMark) {
-            showIndented("Nice! I've marked this task as done:");
-        } else {
-            showIndented("OK, I've marked this task as not done yet:");
-        }
-        System.out.println(TASK_INDENT + task);
-        showLine();
+    public String formatMark(Task task, boolean isMark) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append(isMark
+                ? "Nice! I've marked this task as done:"
+                : "OK, I've marked this task as not done yet:").append(LS);
+        sb.append(TASK_INDENT).append(task).append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 
     /**
-     * Prints a message after deleting a task.
+     * Returns a formatted message after deleting a task.
      *
-     * @param task Task that was removed.
-     * @param size New size of the task list.
+     * @param task Removed task.
+     * @param size New list size.
+     * @return Delete message string.
      */
-    public void showDelete(Task task, int size) {
-        showLine();
-        showIndented("Noted. I've removed this task:");
-        System.out.println(TASK_INDENT + task);
-        showIndented("Now you have " + size + " tasks in the list.");
-        showLine();
+    public String formatDelete(Task task, int size) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("Noted. I've removed this task:").append(LS);
+        sb.append(TASK_INDENT).append(task).append(LS);
+        sb.append(INDENT).append("Now you have ").append(size)
+                .append(" tasks in the list.").append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 
     /**
-     * Displays tasks that match the {@code find} keyword.
+     * Returns the formatted find results.
      *
-     * @param matches Matching tasks to display.
+     * @param matches Matching tasks.
+     * @return Find results string.
      */
-    public void showFindResults(List<Task> matches) {
-        showLine();
-        showIndented("Here are the matching tasks in your list:");
+    public String formatFindResults(List<Task> matches) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("Here are the matching tasks in your list:").append(LS);
+
         for (int i = 0; i < matches.size(); i++) {
-            System.out.println(INDENT + (i + 1) + ". " + matches.get(i));
+            sb.append(INDENT).append(i + 1).append(". ").append(matches.get(i)).append(LS);
         }
-        showLine();
-    }
 
-    /** 
-     * Closes the underlying scanner. 
-     */
-    public void close() {
-        scanner.close();
-    }
-
-    private void showLine() {
-        System.out.println(LINE);
-    }
-
-    private void showIndented(String message) {
-        System.out.println(INDENT + message);
+        sb.append(LINE).append(LS);
+        return sb.toString();
     }
 }
