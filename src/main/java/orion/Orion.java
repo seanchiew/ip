@@ -8,6 +8,9 @@ import java.util.Scanner;
  * Provides a getResponse() API for GUI and a run() wrapper for CLI.
  */
 public class Orion {
+    private static final String UNKNOWN_COMMAND_MESSAGE =
+            "I don't know what that means. Try: todo, deadline, event, list, mark, unmark, delete, bye";
+
     private final Storage storage;
     private final TaskList tasks;
     private final Ui ui;
@@ -57,9 +60,9 @@ public class Orion {
         if (trimmed.isEmpty()) {
             return ui.formatError("Please enter a command.");
         }
-
+        
         try {
-            Parser.ParsedCommand command = parser.parse(trimmed);
+            Parser.ParsedCommand command = parser.parse(input);
             String commandWord = command.getCommandWord();
             String arguments = command.getArguments();
 
@@ -83,8 +86,7 @@ public class Orion {
 
         while (!isExit) {
             String input = scanner.nextLine();
-            String response = getResponse(input);
-            System.out.print(response);
+            System.out.print(getResponse(input));
         }
 
         scanner.close();
@@ -114,44 +116,58 @@ public class Orion {
         case "list":
             return ui.formatList(tasks);
 
-        case "mark": {
-            int index = parser.parseTaskIndex(arguments, "mark", tasks.size());
-            Task task = tasks.markDone(index);
-            storage.save(tasks.asUnmodifiableList());
-            return ui.formatMark(task, true);
-        }
+        case "mark":
+            return handleMark(arguments, true);
 
-        case "unmark": {
-            int index = parser.parseTaskIndex(arguments, "unmark", tasks.size());
-            Task task = tasks.markUndone(index);
-            storage.save(tasks.asUnmodifiableList());
-            return ui.formatMark(task, false);
-        }
+        case "unmark":
+            return handleMark(arguments, false);
 
-        case "find": {
-            String keyword = Parser.parseFindKeyword(arguments);
-            return ui.formatFindResults(tasks.find(keyword));
-        }
+        case "find":
+            return handleFind(arguments);
 
         case "todo":
         case "deadline":
-        case "event": {
-            Task newTask = parser.parseTask(commandWord, arguments);
-            tasks.add(newTask);
-            storage.save(tasks.asUnmodifiableList());
-            return ui.formatAdd(newTask, tasks.size());
-        }
+        case "event":
+            return handleAddTask(commandWord, arguments);
 
-        case "delete": {
-            int index = parser.parseTaskIndex(arguments, "delete", tasks.size());
-            Task removed = tasks.remove(index);
-            storage.save(tasks.asUnmodifiableList());
-            return ui.formatDelete(removed, tasks.size());
-        }
+        case "delete":
+            return handleDelete(arguments);
 
         default:
-            throw new OrionException("I don't know what that means. "
-                    + "Try: todo, deadline, event, list, mark, unmark, delete, bye");
+            throw new OrionException(UNKNOWN_COMMAND_MESSAGE);
         }
+    }
+
+    private String handleMark(String arguments, boolean markDone) throws OrionException {
+        String keyword = markDone ? "mark" : "unmark";
+        int index = parser.parseTaskIndex(arguments, keyword, tasks.size());
+
+        Task updated = markDone ? tasks.markDone(index) : tasks.markUndone(index);
+        saveTasks();
+
+        return ui.formatMark(updated, markDone);
+    }
+
+    private String handleFind(String arguments) throws OrionException {
+        String keyword = Parser.parseFindKeyword(arguments);
+        return ui.formatFindResults(tasks.find(keyword));
+    }
+
+    private String handleAddTask(String commandWord, String arguments) throws OrionException {
+        Task newTask = parser.parseTask(commandWord, arguments);
+        tasks.add(newTask);
+        saveTasks();
+        return ui.formatAdd(newTask, tasks.size());
+    }
+
+    private String handleDelete(String arguments) throws OrionException {
+        int index = parser.parseTaskIndex(arguments, "delete", tasks.size());
+        Task removed = tasks.remove(index);
+        saveTasks();
+        return ui.formatDelete(removed, tasks.size());
+    }
+
+    private void saveTasks() throws OrionException {
+        storage.save(tasks.asUnmodifiableList());
     }
 }
