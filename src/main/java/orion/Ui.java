@@ -147,4 +147,23 @@ public class Ui {
         sb.append(LINE).append(LS);
         return sb.toString();
     }
+
+    /**
+     * Returns a formatted message when the user tries to add a duplicate task.
+     *
+     * @param existing Existing task in the list.
+     * @param taskNumber 1-based index of the existing task.
+     * @return Duplicate warning message string.
+     */
+    public String formatDuplicate(Task existing, int taskNumber) {
+        assert existing != null : "formatDuplicate(): existing task must not be null";
+        assert taskNumber >= 1 : "formatDuplicate(): taskNumber must be >= 1";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+        sb.append(INDENT).append("That task already exists in your list (not added):").append(LS);
+        sb.append(TASK_INDENT).append(taskNumber).append(". ").append(existing).append(LS);
+        sb.append(LINE).append(LS);
+        return sb.toString();
+    }
 }

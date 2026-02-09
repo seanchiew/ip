@@ -63,6 +63,37 @@ public class Task {
     }
 
     /**
+     * Returns {@code true} if {@code other} represents the same "logical" task as this one.
+     * This ignores completion status and compares only the identifying fields.
+     *
+     * @param other Another task.
+     * @return True if both tasks are considered duplicates.
+     */
+    public boolean isSameTask(Task other) {
+        if (other == null) {
+            return false;
+        }
+        // "Duplicate" requires same concrete task type (Todo vs Deadline vs Event).
+        if (this.getClass() != other.getClass()) {
+            return false;
+        }
+
+        // Normalize description to avoid duplicates caused by casing / extra spaces.
+        String a = normalizeDescription(this.description);
+        String b = normalizeDescription(other.description);
+        return a.equals(b);
+    }
+
+    /**
+     * Normalizes task descriptions for duplicate detection.
+     */
+    protected static String normalizeDescription(String raw) {
+        assert raw != null : "normalizeDescription(): raw must not be null";
+        return raw.trim().replaceAll("\\s+", " ").toLowerCase();
+    }
+
+
+    /**
      * Returns a string representation of this task suitable for saving to disk.
      *
      * @return Data string of this task.
