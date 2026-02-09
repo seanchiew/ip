@@ -2,20 +2,11 @@ package orion;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 /**
  * Represents a task that occurs during a specified time period.
  */
 public class Event extends Task {
-    private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter DISPLAY_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
-    private static final DateTimeFormatter STORAGE_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
-
     private final LocalDate fromDate;
     private final LocalTime fromTime; // null if time not provided
     private final LocalDate toDate;
@@ -41,8 +32,8 @@ public class Event extends Task {
 
     @Override
     public String toDataString() {
-        String fromTimePart = (fromTime == null) ? "-" : fromTime.format(STORAGE_TIME_FORMAT);
-        String toTimePart = (toTime == null) ? "-" : toTime.format(STORAGE_TIME_FORMAT);
+        String fromTimePart = DateTimeUtil.formatTimeForStorage(fromTime);
+        String toTimePart = DateTimeUtil.formatTimeForStorage(toTime);
 
         return "E | " + getDoneFlag() + " | " + getDescription()
                 + " | " + fromDate + " | " + fromTimePart
@@ -57,16 +48,8 @@ public class Event extends Task {
      */
     @Override
     public String toString() {
-        String fromDisplay = formatForDisplay(fromDate, fromTime);
-        String toDisplay = formatForDisplay(toDate, toTime);
+        String fromDisplay = DateTimeUtil.formatForDisplay(fromDate, fromTime);
+        String toDisplay = DateTimeUtil.formatForDisplay(toDate, toTime);
         return "[E]" + super.toString() + " (from: " + fromDisplay + " to: " + toDisplay + ")";
-    }
-
-    private static String formatForDisplay(LocalDate date, LocalTime time) {
-        String datePart = date.format(DISPLAY_DATE_FORMAT);
-        if (time == null) {
-            return datePart;
-        }
-        return datePart + " " + time.format(DISPLAY_TIME_FORMAT);
     }
 }

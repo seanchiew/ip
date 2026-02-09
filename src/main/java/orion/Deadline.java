@@ -2,20 +2,11 @@ package orion;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 /**
  * Represents a task that must be completed before a specific date/time.
  */
 public class Deadline extends Task {
-    private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
-    private static final DateTimeFormatter DISPLAY_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
-    private static final DateTimeFormatter STORAGE_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH);
-
     private final LocalDate byDate;
     private final LocalTime byTime; // null if time not provided
 
@@ -34,7 +25,7 @@ public class Deadline extends Task {
 
     @Override
     public String toDataString() {
-        String timePart = (byTime == null) ? "-" : byTime.format(STORAGE_TIME_FORMAT);
+        String timePart = DateTimeUtil.formatTimeForStorage(byTime);
         return "D | " + getDoneFlag() + " | " + getDescription() + " | " + byDate + " | " + timePart;
     }
 
@@ -46,14 +37,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + formatForDisplay(byDate, byTime) + ")";
-    }
-
-    private static String formatForDisplay(LocalDate date, LocalTime time) {
-        String datePart = date.format(DISPLAY_DATE_FORMAT);
-        if (time == null) {
-            return datePart;
-        }
-        return datePart + " " + time.format(DISPLAY_TIME_FORMAT);
+        String byDisplay = DateTimeUtil.formatForDisplay(byDate, byTime);
+        return "[D]" + super.toString() + " (by: " + byDisplay + ")";
     }
 }
