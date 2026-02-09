@@ -26,6 +26,7 @@ public class Storage {
     public Storage() {
         String filePath = System.getProperty("orion.dataFile", DEFAULT_DATA_FILE);
         this.dataPath = Paths.get(filePath);
+        assert dataPath != null : "Resolved data path must not be null";
     }
 
     /**
@@ -41,6 +42,7 @@ public class Storage {
 
         try {
             List<String> lines = Files.readAllLines(dataPath, StandardCharsets.UTF_8);
+            assert lines != null : "Files.readAllLines should not return null";
             ArrayList<Task> tasks = new ArrayList<>();
 
             for (String line : lines) {
@@ -62,6 +64,10 @@ public class Storage {
      * @throws OrionException If the file cannot be written.
      */
     public void save(List<Task> tasks) throws OrionException {
+        assert tasks != null : "save(): tasks must not be null";
+        for (Task task : tasks) {
+            assert task != null : "save(): tasks must not contain null elements";
+        }
         try {
             Path parent = dataPath.getParent();
             if (parent != null) {

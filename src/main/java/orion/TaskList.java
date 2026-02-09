@@ -21,6 +21,10 @@ public class TaskList {
      * @param tasks Tasks to initialize with.
      */
     public TaskList(List<Task> tasks) {
+        assert tasks != null : "Initial task list must not be null";
+        for (Task task : tasks) {
+            assert task != null : "Initial task list must not contain null tasks";
+        }
         this.tasks = new ArrayList<>(tasks);
     }
 
@@ -40,6 +44,7 @@ public class TaskList {
      * @return Task at the index.
      */
     public Task get(int index) {
+        assert index >= 0 && index < tasks.size() : "get(): index out of bounds: " + index;
         return tasks.get(index);
     }
 
@@ -49,6 +54,7 @@ public class TaskList {
      * @param task Task to add.
      */
     public void add(Task task) {
+        assert task != null : "add(): task must not be null";
         tasks.add(task);
     }
 
@@ -59,6 +65,7 @@ public class TaskList {
      * @return Removed task.
      */
     public Task remove(int index) {
+        assert index >= 0 && index < tasks.size() : "remove(): index out of bounds: " + index;
         return tasks.remove(index);
     }
 
@@ -69,7 +76,9 @@ public class TaskList {
      * @return Updated task.
      */
     public Task markDone(int index) {
+        assert index >= 0 && index < tasks.size() : "markDone(): index out of bounds: " + index;
         Task task = tasks.get(index);
+        assert task != null : "markDone(): task must not be null";
         task.markDone();
         return task;
     }
@@ -81,7 +90,9 @@ public class TaskList {
      * @return Updated task.
      */
     public Task markUndone(int index) {
+        assert index >= 0 && index < tasks.size() : "markUndone(): index out of bounds: " + index;
         Task task = tasks.get(index);
+        assert task != null : "markUndone(): task must not be null";
         task.markUndone();
         return task;
     }
@@ -92,6 +103,7 @@ public class TaskList {
      * @return Unmodifiable list of tasks.
      */
     public List<Task> asUnmodifiableList() {
+        assert tasks != null : "Internal task list must not be null";
         return Collections.unmodifiableList(tasks);
     }
 
