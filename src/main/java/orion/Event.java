@@ -33,6 +33,8 @@ public class Event extends Task {
     public Event(String description, LocalDate fromDate, LocalTime fromTime,
                  LocalDate toDate, LocalTime toTime) {
         super(description);
+        assert fromDate != null : "Event fromDate must not be null";
+        assert toDate != null : "Event toDate must not be null";
         this.fromDate = fromDate;
         this.fromTime = fromTime;
         this.toDate = toDate;
