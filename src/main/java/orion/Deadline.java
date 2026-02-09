@@ -2,6 +2,7 @@ package orion;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 
 /**
  * Represents a task that must be completed before a specific date/time.
@@ -22,6 +23,15 @@ public class Deadline extends Task {
         assert byDate != null : "Deadline byDate must not be null";
         this.byDate = byDate;
         this.byTime = byTime;
+    }
+
+    @Override
+    public boolean isSameTask(Task other) {
+        if (!super.isSameTask(other)) {
+            return false;
+        }
+        Deadline d = (Deadline) other;
+        return byDate.equals(d.byDate) && Objects.equals(byTime, d.byTime);
     }
 
     @Override

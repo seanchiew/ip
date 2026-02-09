@@ -2,6 +2,7 @@ package orion;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 
 /**
  * Represents a task that occurs during a specified time period.
@@ -30,6 +31,18 @@ public class Event extends Task {
         this.fromTime = fromTime;
         this.toDate = toDate;
         this.toTime = toTime;
+    }
+
+    @Override
+    public boolean isSameTask(Task other) {
+        if (!super.isSameTask(other)) {
+            return false;
+        }
+        Event e = (Event) other;
+        return fromDate.equals(e.fromDate)
+                && Objects.equals(fromTime, e.fromTime)
+                && toDate.equals(e.toDate)
+                && Objects.equals(toTime, e.toTime);
     }
 
     @Override

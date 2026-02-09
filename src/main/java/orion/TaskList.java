@@ -98,6 +98,23 @@ public class TaskList {
     }
 
     /**
+     * Returns the index of the first existing task that is a duplicate of {@code candidate}.
+     *
+     * @param candidate Task to check.
+     * @return 0-based index of duplicate if found, else -1.
+     */
+    public int indexOfDuplicate(Task candidate) {
+        assert candidate != null : "indexOfDuplicate(): candidate must not be null";
+        for (int i = 0; i < tasks.size(); i++) {
+            Task existing = tasks.get(i);
+            if (existing.isSameTask(candidate)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Returns an unmodifiable view of the underlying task list.
      *
      * @return Unmodifiable list of tasks.

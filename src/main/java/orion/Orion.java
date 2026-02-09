@@ -155,6 +155,13 @@ public class Orion {
 
     private String handleAddTask(String commandWord, String arguments) throws OrionException {
         Task newTask = parser.parseTask(commandWord, arguments);
+
+        int duplicateIndex = tasks.indexOfDuplicate(newTask);
+        if (duplicateIndex != -1) {
+            Task existing = tasks.get(duplicateIndex);
+            return ui.formatDuplicate(existing, duplicateIndex + 1);
+        }
+
         tasks.add(newTask);
         saveTasks();
         return ui.formatAdd(newTask, tasks.size());
