@@ -61,6 +61,7 @@ public class Ui {
      * @return Task list string.
      */
     public String formatList(TaskList tasks) {
+        assert tasks != null : "formatList(): tasks must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append(LINE).append(LS);
         sb.append(INDENT).append("Here are the tasks in your list:").append(LS);
@@ -134,6 +135,7 @@ public class Ui {
      * @return Find results string.
      */
     public String formatFindResults(List<Task> matches) {
+        assert matches != null : "formatFindResults(): matches must not be null";
         StringBuilder sb = new StringBuilder();
         sb.append(LINE).append(LS);
         sb.append(INDENT).append("Here are the matching tasks in your list:").append(LS);

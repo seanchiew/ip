@@ -61,6 +61,8 @@ public class Parser {
         String[] parts = userInput.trim().split("\\s+", 2);
         String commandWord = parts[0].trim();
         String arguments = (parts.length == 2) ? parts[1].trim() : "";
+        assert !commandWord.isEmpty() : "Command word should not be empty after trimming";
+        assert arguments != null : "Arguments string should not be null";
         return new ParsedCommand(commandWord, arguments);
     }
 
@@ -117,7 +119,9 @@ public class Parser {
             throw new OrionException("Task number must be between 1 and " + taskCount + ".");
         }
 
-        return taskNumber - 1;
+        int index = taskNumber - 1;
+        assert index >= 0 && index < taskCount : "Parsed index must be within current taskCount";
+        return index;
     }
 
     private static Task parseTodo(String arguments) throws OrionException {

@@ -13,6 +13,7 @@ public class Task {
      * @param description Description of the task.
      */
     public Task(String description) {
+        assert description != null : "Task description must not be null";
         this.description = description;
         this.isDone = false;
     }
@@ -47,6 +48,7 @@ public class Task {
      * @return {@code true} if the keyword is found in the description.
      */
     public boolean matches(String keyword) {
+        assert description != null : "Task description must not be null";
         String needle = keyword == null ? "" : keyword.trim().toLowerCase();
         return !needle.isEmpty() && description.toLowerCase().contains(needle);
     }
