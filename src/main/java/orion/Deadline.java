@@ -8,6 +8,9 @@ import java.util.Objects;
  * Represents a task that must be completed before a specific date/time.
  */
 public class Deadline extends Task {
+    private static final String TYPE_CODE = "D";
+    private static final String DISPLAY_TAG = "[D]";
+
     private final LocalDate byDate;
     private final LocalTime byTime; // null if time not provided
 
@@ -36,8 +39,8 @@ public class Deadline extends Task {
 
     @Override
     public String toDataString() {
-        String timePart = DateTimeUtil.formatTimeForStorage(byTime);
-        return "D | " + getDoneFlag() + " | " + getDescription() + " | " + byDate + " | " + timePart;
+        return TYPE_CODE + " | " + getDoneFlag() + " | " + getDescription()
+                + " | " + byDate + " | " + DateTimeUtil.formatTimeForStorage(byTime);
     }
 
     /**
@@ -48,7 +51,7 @@ public class Deadline extends Task {
      */
     @Override
     public String toString() {
-        String byDisplay = DateTimeUtil.formatForDisplay(byDate, byTime);
-        return "[D]" + super.toString() + " (by: " + byDisplay + ")";
+        return DISPLAY_TAG + super.toString()
+                + " (by: " + DateTimeUtil.formatForDisplay(byDate, byTime) + ")";
     }
 }

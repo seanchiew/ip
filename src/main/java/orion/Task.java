@@ -1,10 +1,18 @@
 package orion;
 
+import java.util.Objects;
+
 /**
  * Represents a task with a description and a completion status.
  */
 public class Task {
+    private static final String TYPE_CODE = "T";
+    private static final String FIELD_SEPARATOR = " | ";
+    private static final String DONE_FLAG = "1";
+    private static final String NOT_DONE_FLAG = "0";
+
     private final String description;
+    private final String normalizedDescription; // cached for duplicate checks/search
     private boolean isDone;
 
     /**
@@ -15,6 +23,7 @@ public class Task {
     public Task(String description) {
         assert description != null : "Task description must not be null";
         this.description = description;
+        this.normalizedDescription = normalizeDescription(description);
         this.isDone = false;
     }
 
@@ -50,7 +59,10 @@ public class Task {
     public boolean matches(String keyword) {
         assert description != null : "Task description must not be null";
         String needle = keyword == null ? "" : keyword.trim().toLowerCase();
-        return !needle.isEmpty() && description.toLowerCase().contains(needle);
+        if (needle.isEmpty()) {
+            return false;
+        }
+        return description.toLowerCase().contains(needle);
     }
 
     /**
@@ -59,7 +71,7 @@ public class Task {
      * @return Done flag string.
      */
     protected String getDoneFlag() {
-        return isDone ? "1" : "0";
+        return isDone ? DONE_FLAG : NOT_DONE_FLAG;
     }
 
     /**
@@ -77,11 +89,8 @@ public class Task {
         if (this.getClass() != other.getClass()) {
             return false;
         }
-
-        // Normalize description to avoid duplicates caused by casing / extra spaces.
-        String a = normalizeDescription(this.description);
-        String b = normalizeDescription(other.description);
-        return a.equals(b);
+        // Compare normalized descriptions to avoid duplicates caused by casing / extra spaces.
+        return this.normalizedDescription.equals(other.normalizedDescription);
     }
 
     /**
@@ -92,14 +101,13 @@ public class Task {
         return raw.trim().replaceAll("\\s+", " ").toLowerCase();
     }
 
-
     /**
      * Returns a string representation of this task suitable for saving to disk.
      *
      * @return Data string of this task.
      */
     public String toDataString() {
-        return "T | " + getDoneFlag() + " | " + getDescription();
+        return TYPE_CODE + FIELD_SEPARATOR + getDoneFlag() + FIELD_SEPARATOR + getDescription();
     }
 
     /**

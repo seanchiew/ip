@@ -8,6 +8,9 @@ import java.util.Objects;
  * Represents a task that occurs during a specified time period.
  */
 public class Event extends Task {
+    private static final String TYPE_CODE = "E";
+    private static final String DISPLAY_TAG = "[E]";
+
     private final LocalDate fromDate;
     private final LocalTime fromTime; // null if time not provided
     private final LocalDate toDate;
@@ -47,12 +50,9 @@ public class Event extends Task {
 
     @Override
     public String toDataString() {
-        String fromTimePart = DateTimeUtil.formatTimeForStorage(fromTime);
-        String toTimePart = DateTimeUtil.formatTimeForStorage(toTime);
-
-        return "E | " + getDoneFlag() + " | " + getDescription()
-                + " | " + fromDate + " | " + fromTimePart
-                + " | " + toDate + " | " + toTimePart;
+        return TYPE_CODE + " | " + getDoneFlag() + " | " + getDescription()
+                + " | " + fromDate + " | " + DateTimeUtil.formatTimeForStorage(fromTime)
+                + " | " + toDate + " | " + DateTimeUtil.formatTimeForStorage(toTime);
     }
 
     /**
@@ -65,6 +65,7 @@ public class Event extends Task {
     public String toString() {
         String fromDisplay = DateTimeUtil.formatForDisplay(fromDate, fromTime);
         String toDisplay = DateTimeUtil.formatForDisplay(toDate, toTime);
-        return "[E]" + super.toString() + " (from: " + fromDisplay + " to: " + toDisplay + ")";
+        return DISPLAY_TAG + super.toString()
+                + " (from: " + fromDisplay + " to: " + toDisplay + ")";
     }
 }

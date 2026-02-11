@@ -22,10 +22,12 @@ public class TaskList {
      */
     public TaskList(List<Task> tasks) {
         assert tasks != null : "Initial task list must not be null";
+
+        this.tasks = new ArrayList<>(tasks.size());
         for (Task task : tasks) {
             assert task != null : "Initial task list must not contain null tasks";
+            this.tasks.add(task);
         }
-        this.tasks = new ArrayList<>(tasks);
     }
 
     /**
@@ -44,8 +46,7 @@ public class TaskList {
      * @return Task at the index.
      */
     public Task get(int index) {
-        assert index >= 0 && index < tasks.size() : "get(): index out of bounds: " + index;
-        return tasks.get(index);
+        return getTaskAt(index, "get()");
     }
 
     /**
@@ -65,7 +66,7 @@ public class TaskList {
      * @return Removed task.
      */
     public Task remove(int index) {
-        assert index >= 0 && index < tasks.size() : "remove(): index out of bounds: " + index;
+        assertIndexInBounds(index, "remove()");
         return tasks.remove(index);
     }
 
@@ -76,9 +77,7 @@ public class TaskList {
      * @return Updated task.
      */
     public Task markDone(int index) {
-        assert index >= 0 && index < tasks.size() : "markDone(): index out of bounds: " + index;
-        Task task = tasks.get(index);
-        assert task != null : "markDone(): task must not be null";
+        Task task = getTaskAt(index, "markDone()");
         task.markDone();
         return task;
     }
@@ -90,9 +89,7 @@ public class TaskList {
      * @return Updated task.
      */
     public Task markUndone(int index) {
-        assert index >= 0 && index < tasks.size() : "markUndone(): index out of bounds: " + index;
-        Task task = tasks.get(index);
-        assert task != null : "markUndone(): task must not be null";
+        Task task = getTaskAt(index, "markUndone()");
         task.markUndone();
         return task;
     }
@@ -105,9 +102,9 @@ public class TaskList {
      */
     public int indexOfDuplicate(Task candidate) {
         assert candidate != null : "indexOfDuplicate(): candidate must not be null";
+
         for (int i = 0; i < tasks.size(); i++) {
-            Task existing = tasks.get(i);
-            if (existing.isSameTask(candidate)) {
+            if (tasks.get(i).isSameTask(candidate)) {
                 return i;
             }
         }
@@ -138,5 +135,19 @@ public class TaskList {
             }
         }
         return matches;
+    }
+
+    // ---- Helpers ----
+
+    private Task getTaskAt(int index, String caller) {
+        assertIndexInBounds(index, caller);
+        Task task = tasks.get(index);
+        assert task != null : caller + ": task must not be null at index " + index;
+        return task;
+    }
+
+    private void assertIndexInBounds(int index, String caller) {
+        assert index >= 0 && index < tasks.size()
+                : caller + ": index out of bounds: " + index + " (size=" + tasks.size() + ")";
     }
 }

@@ -9,9 +9,25 @@ import java.util.List;
 public class Ui {
     private static final String INDENT = "    ";
     private static final String TASK_INDENT = "      ";
-    private static final String LINE = INDENT
-            + "_______________________________________________________";
+    private static final String LINE = INDENT + "_______________________________________________________";
     private static final String LS = System.lineSeparator();
+
+    private static final String WELCOME_TITLE = "Hello! I'm Orion";
+    private static final String WELCOME_PROMPT = "What can I do for you?";
+    private static final String BYE_MESSAGE = "Bye. Hope to see you again soon!";
+
+    private static final String LIST_HEADER = "Here are the tasks in your list:";
+    private static final String FIND_HEADER = "Here are the matching tasks in your list:";
+
+    private static final String ADD_HEADER = "Got it. I've added this task:";
+    private static final String DELETE_HEADER = "Noted. I've removed this task:";
+    private static final String COUNT_PREFIX = "Now you have ";
+    private static final String COUNT_SUFFIX = " tasks in the list.";
+
+    private static final String MARK_DONE_MESSAGE = "Nice! I've marked this task as done:";
+    private static final String MARK_UNDONE_MESSAGE = "OK, I've marked this task as not done yet:";
+
+    private static final String DUPLICATE_HEADER = "That task already exists in your list (not added):";
 
     /**
      * Returns the greeting message.
@@ -19,12 +35,10 @@ public class Ui {
      * @return Welcome message string.
      */
     public String formatWelcome() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append("Hello! I'm Orion").append(LS);
-        sb.append(INDENT).append("What can I do for you?").append(LS);
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        return framed(
+                INDENT + WELCOME_TITLE,
+                INDENT + WELCOME_PROMPT
+        );
     }
 
     /**
@@ -33,11 +47,7 @@ public class Ui {
      * @return Bye message string.
      */
     public String formatBye() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append("Bye. Hope to see you again soon!").append(LS);
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        return framed(INDENT + BYE_MESSAGE);
     }
 
     /**
@@ -47,11 +57,8 @@ public class Ui {
      * @return Error message string.
      */
     public String formatError(String message) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append(message).append(LS);
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        assert message != null : "formatError(): message must not be null";
+        return framed(INDENT + message);
     }
 
     /**
@@ -62,16 +69,15 @@ public class Ui {
      */
     public String formatList(TaskList tasks) {
         assert tasks != null : "formatList(): tasks must not be null";
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append("Here are the tasks in your list:").append(LS);
+
+        StringBuilder body = new StringBuilder();
+        body.append(INDENT).append(LIST_HEADER).append(LS);
 
         for (int i = 0; i < tasks.size(); i++) {
-            sb.append(INDENT).append(i + 1).append(". ").append(tasks.get(i)).append(LS);
+            body.append(formatNumberedTaskLine(i + 1, tasks.get(i)));
         }
 
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        return framed(body.toString());
     }
 
     /**
@@ -82,14 +88,14 @@ public class Ui {
      * @return Add success message string.
      */
     public String formatAdd(Task task, int size) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append("Got it. I've added this task:").append(LS);
-        sb.append(TASK_INDENT).append(task).append(LS);
-        sb.append(INDENT).append("Now you have ").append(size)
-                .append(" tasks in the list.").append(LS);
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        assert task != null : "formatAdd(): task must not be null";
+        assert size >= 0 : "formatAdd(): size must be non-negative";
+
+        return framed(
+                INDENT + ADD_HEADER,
+                TASK_INDENT + task,
+                INDENT + COUNT_PREFIX + size + COUNT_SUFFIX
+        );
     }
 
     /**
@@ -100,14 +106,13 @@ public class Ui {
      * @return Mark/unmark message string.
      */
     public String formatMark(Task task, boolean isMark) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append(isMark
-                ? "Nice! I've marked this task as done:"
-                : "OK, I've marked this task as not done yet:").append(LS);
-        sb.append(TASK_INDENT).append(task).append(LS);
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        assert task != null : "formatMark(): task must not be null";
+
+        String header = isMark ? MARK_DONE_MESSAGE : MARK_UNDONE_MESSAGE;
+        return framed(
+                INDENT + header,
+                TASK_INDENT + task
+        );
     }
 
     /**
@@ -118,14 +123,14 @@ public class Ui {
      * @return Delete message string.
      */
     public String formatDelete(Task task, int size) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append("Noted. I've removed this task:").append(LS);
-        sb.append(TASK_INDENT).append(task).append(LS);
-        sb.append(INDENT).append("Now you have ").append(size)
-                .append(" tasks in the list.").append(LS);
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        assert task != null : "formatDelete(): task must not be null";
+        assert size >= 0 : "formatDelete(): size must be non-negative";
+
+        return framed(
+                INDENT + DELETE_HEADER,
+                TASK_INDENT + task,
+                INDENT + COUNT_PREFIX + size + COUNT_SUFFIX
+        );
     }
 
     /**
@@ -136,16 +141,15 @@ public class Ui {
      */
     public String formatFindResults(List<Task> matches) {
         assert matches != null : "formatFindResults(): matches must not be null";
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append(LS);
-        sb.append(INDENT).append("Here are the matching tasks in your list:").append(LS);
+
+        StringBuilder body = new StringBuilder();
+        body.append(INDENT).append(FIND_HEADER).append(LS);
 
         for (int i = 0; i < matches.size(); i++) {
-            sb.append(INDENT).append(i + 1).append(". ").append(matches.get(i)).append(LS);
+            body.append(formatNumberedTaskLine(i + 1, matches.get(i)));
         }
 
-        sb.append(LINE).append(LS);
-        return sb.toString();
+        return framed(body.toString());
     }
 
     /**
@@ -159,11 +163,54 @@ public class Ui {
         assert existing != null : "formatDuplicate(): existing task must not be null";
         assert taskNumber >= 1 : "formatDuplicate(): taskNumber must be >= 1";
 
+        return framed(
+                INDENT + DUPLICATE_HEADER,
+                TASK_INDENT + taskNumber + ". " + existing
+        );
+    }
+
+    /**
+     * Wraps the given lines in Orion's UI frame (top/bottom LINE).
+     * Each line is appended with a line separator.
+     */
+    private static String framed(String... lines) {
         StringBuilder sb = new StringBuilder();
         sb.append(LINE).append(LS);
-        sb.append(INDENT).append("That task already exists in your list (not added):").append(LS);
-        sb.append(TASK_INDENT).append(taskNumber).append(". ").append(existing).append(LS);
+
+        for (String line : lines) {
+            if (line == null) {
+                continue;
+            }
+            sb.append(line).append(LS);
+        }
+
         sb.append(LINE).append(LS);
         return sb.toString();
+    }
+
+    /**
+     * Overload for callers that already built a multi-line body string.
+     * Ensures body ends with a newline for consistent framing.
+     */
+    private static String framed(String body) {
+        assert body != null : "framed(body): body must not be null";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append(LS);
+
+        sb.append(body);
+        if (!body.endsWith(LS)) {
+            sb.append(LS);
+        }
+
+        sb.append(LINE).append(LS);
+        return sb.toString();
+    }
+
+    private static String formatNumberedTaskLine(int oneBasedIndex, Task task) {
+        assert oneBasedIndex >= 1 : "formatNumberedTaskLine(): index must be >= 1";
+        assert task != null : "formatNumberedTaskLine(): task must not be null";
+
+        return INDENT + oneBasedIndex + ". " + task + LS;
     }
 }

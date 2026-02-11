@@ -17,6 +17,18 @@ import java.util.List;
  */
 public class Storage {
     private static final String DEFAULT_DATA_FILE = "data/orion.txt";
+
+    private static final String FIELD_SEPARATOR_REGEX = "\\s*\\|\\s*";
+    private static final String NO_TIME_MARKER = "-";
+
+    private static final String TYPE_TODO = "T";
+    private static final String TYPE_DEADLINE = "D";
+    private static final String TYPE_EVENT = "E";
+
+    private static final String ERROR_LOAD_PREFIX = "Failed to load tasks: ";
+    private static final String ERROR_SAVE_PREFIX = "Failed to save tasks: ";
+    private static final String ERROR_CORRUPTED_PREFIX = "Saved data is corrupted: ";
+
     private final Path dataPath;
 
     /**
@@ -36,24 +48,24 @@ public class Storage {
      * @throws OrionException If the file exists but cannot be read or is corrupted.
      */
     public ArrayList<Task> load() throws OrionException {
-        if (!Files.exists(dataPath)) {
+        if (Files.notExists(dataPath)) {
             return new ArrayList<>();
         }
 
         try {
             List<String> lines = Files.readAllLines(dataPath, StandardCharsets.UTF_8);
-            assert lines != null : "Files.readAllLines should not return null";
-            ArrayList<Task> tasks = new ArrayList<>();
+            ArrayList<Task> loadedTasks = new ArrayList<>();
 
             for (String line : lines) {
-                if (line.trim().isEmpty()) {
+                if (isBlank(line)) {
                     continue;
                 }
-                tasks.add(parseLine(line));
+                loadedTasks.add(parseLine(line));
             }
-            return tasks;
+
+            return loadedTasks;
         } catch (IOException e) {
-            throw new OrionException("Failed to load tasks: " + e.getMessage());
+            throw new OrionException(ERROR_LOAD_PREFIX + e.getMessage());
         }
     }
 
@@ -68,65 +80,49 @@ public class Storage {
         for (Task task : tasks) {
             assert task != null : "save(): tasks must not contain null elements";
         }
+
         try {
-            Path parent = dataPath.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
+            ensureParentDirExists();
 
-            List<String> lines = new ArrayList<>();
+            List<String> serializedLines = new ArrayList<>();
             for (Task task : tasks) {
-                lines.add(task.toDataString());
+                serializedLines.add(task.toDataString());
             }
 
-            Files.write(dataPath, lines, StandardCharsets.UTF_8,
+            Files.write(dataPath, serializedLines, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            throw new OrionException("Failed to save tasks: " + e.getMessage());
+            throw new OrionException(ERROR_SAVE_PREFIX + e.getMessage());
         }
     }
 
+    private void ensureParentDirExists() throws IOException {
+        Path parent = dataPath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
     private static Task parseLine(String line) throws OrionException {
-        String[] parts = line.split("\\s*\\|\\s*");
-        if (parts.length < 3) {
-            throw new OrionException("Saved data is corrupted: " + line);
-        }
+        String[] parts = line.split(FIELD_SEPARATOR_REGEX);
 
-        String type = parts[0];
-        int doneFlag = parseDoneFlag(parts[1]);
-        String description = parts[2];
+        // Common minimum: TYPE | DONE | DESC
+        requireMinParts(parts, 3, line);
 
-        Task task;
-        switch (type) {
-        case "T":
-            task = new Todo(description);
-            break;
+        String type = parts[0].trim();
+        int doneFlag = parseDoneFlag(parts[1].trim(), line);
+        String description = parts[2].trim();
 
-        case "D":
-            // Expected: D | done | desc | date | timeOrDash
-            if (parts.length < 5) {
-                throw new OrionException("Saved data is corrupted: " + line);
-            }
-            LocalDate byDate = parseStoredDate(parts[3], line);
-            LocalTime byTime = parseStoredTimeOrNull(parts[4], line);
-            task = new Deadline(description, byDate, byTime);
-            break;
-
-        case "E":
-            // Expected: E | done | desc | fromDate | fromTimeOrDash | toDate | toTimeOrDash
-            if (parts.length < 7) {
-                throw new OrionException("Saved data is corrupted: " + line);
-            }
-            LocalDate fromDate = parseStoredDate(parts[3], line);
-            LocalTime fromTime = parseStoredTimeOrNull(parts[4], line);
-            LocalDate toDate = parseStoredDate(parts[5], line);
-            LocalTime toTime = parseStoredTimeOrNull(parts[6], line);
-            task = new Event(description, fromDate, fromTime, toDate, toTime);
-            break;
-
-        default:
-            throw new OrionException("Saved data is corrupted: " + line);
-        }
+        Task task = switch (type) {
+            case TYPE_TODO -> parseTodo(description);
+            case TYPE_DEADLINE -> parseDeadline(parts, description, line);
+            case TYPE_EVENT -> parseEvent(parts, description, line);
+            default -> throw corrupted(line);
+        };
 
         if (doneFlag == 1) {
             task.markDone();
@@ -134,34 +130,72 @@ public class Storage {
         return task;
     }
 
-    private static int parseDoneFlag(String raw) throws OrionException {
+    private static Task parseTodo(String description) throws OrionException {
+        // Task constructor already asserts non-null description; here we mainly guard against bad save format.
+        if (description.isEmpty()) {
+            throw corrupted("T | ... (empty description)");
+        }
+        return new Todo(description);
+    }
+
+    private static Task parseDeadline(String[] parts, String description, String rawLine) throws OrionException {
+        // Expected: D | done | desc | date | timeOrDash
+        requireMinParts(parts, 5, rawLine);
+
+        LocalDate byDate = parseStoredDate(parts[3], rawLine);
+        LocalTime byTime = parseStoredTimeOrNull(parts[4], rawLine);
+        return new Deadline(description, byDate, byTime);
+    }
+
+    private static Task parseEvent(String[] parts, String description, String rawLine) throws OrionException {
+        // Expected: E | done | desc | fromDate | fromTimeOrDash | toDate | toTimeOrDash
+        requireMinParts(parts, 7, rawLine);
+
+        LocalDate fromDate = parseStoredDate(parts[3], rawLine);
+        LocalTime fromTime = parseStoredTimeOrNull(parts[4], rawLine);
+        LocalDate toDate = parseStoredDate(parts[5], rawLine);
+        LocalTime toTime = parseStoredTimeOrNull(parts[6], rawLine);
+
+        return new Event(description, fromDate, fromTime, toDate, toTime);
+    }
+
+    private static void requireMinParts(String[] parts, int min, String rawLine) throws OrionException {
+        if (parts.length < min) {
+            throw corrupted(rawLine);
+        }
+    }
+
+    private static OrionException corrupted(String rawLine) {
+        return new OrionException(ERROR_CORRUPTED_PREFIX + rawLine);
+    }
+
+    private static int parseDoneFlag(String raw, String rawLine) throws OrionException {
         if ("0".equals(raw)) {
             return 0;
         }
         if ("1".equals(raw)) {
             return 1;
         }
-        throw new OrionException("Saved data is corrupted: invalid done flag " + raw);
+        throw new OrionException(ERROR_CORRUPTED_PREFIX + "invalid done flag in line: " + rawLine);
     }
 
-    private static LocalDate parseStoredDate(String raw, String line) throws OrionException {
+    private static LocalDate parseStoredDate(String raw, String rawLine) throws OrionException {
         try {
             return LocalDate.parse(raw.trim());
         } catch (DateTimeParseException e) {
-            throw new OrionException("Saved data is corrupted: " + line);
+            throw corrupted(rawLine);
         }
     }
 
-    private static LocalTime parseStoredTimeOrNull(String raw, String line) throws OrionException {
+    private static LocalTime parseStoredTimeOrNull(String raw, String rawLine) throws OrionException {
         String trimmed = raw.trim();
-        if ("-".equals(trimmed)) {
+        if (NO_TIME_MARKER.equals(trimmed)) {
             return null;
         }
         try {
             return LocalTime.parse(trimmed);
         } catch (DateTimeParseException e) {
-            throw new OrionException("Saved data is corrupted: " + line);
+            throw corrupted(rawLine);
         }
     }
-
 }

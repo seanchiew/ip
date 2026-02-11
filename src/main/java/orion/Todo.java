@@ -4,6 +4,8 @@ package orion;
  * Represents a to-do task.
  */
 public class Todo extends Task {
+    private static final String TYPE_CODE = "T";
+    private static final String DISPLAY_TAG = "[T]";
 
     /**
      * Constructs a {@code Todo} task with the specified description.
@@ -14,6 +16,11 @@ public class Todo extends Task {
         super(description);
     }
 
+    @Override
+    public String toDataString() {
+        return TYPE_CODE + " | " + getDoneFlag() + " | " + getDescription();
+    }
+
     /**
      * {@inheritDoc}
      * Returns a string representation prefixed with {@code [T]}.
@@ -22,6 +29,6 @@ public class Todo extends Task {
      */
     @Override
     public String toString() {
-        return "[T]" + super.toString();
+        return DISPLAY_TAG + super.toString();
     }
 }

@@ -10,6 +10,18 @@ import java.util.Scanner;
 public class Orion {
     private static final String UNKNOWN_COMMAND_MESSAGE =
             "I don't know what that means. Try: todo, deadline, event, list, mark, unmark, delete, bye";
+    private static final String EMPTY_COMMAND_MESSAGE = "Please enter a command.";
+
+    // Command words
+    private static final String CMD_BYE = "bye";
+    private static final String CMD_LIST = "list";
+    private static final String CMD_MARK = "mark";
+    private static final String CMD_UNMARK = "unmark";
+    private static final String CMD_FIND = "find";
+    private static final String CMD_TODO = "todo";
+    private static final String CMD_DEADLINE = "deadline";
+    private static final String CMD_EVENT = "event";
+    private static final String CMD_DELETE = "delete";
 
     private final Storage storage;
     private final TaskList tasks;
@@ -55,23 +67,14 @@ public class Orion {
      * @return Response string to display.
      */
     public String getResponse(String input) {
-        String trimmed = (input == null) ? "" : input.trim();
-
-        if (trimmed.isEmpty()) {
-            return ui.formatError("Please enter a command.");
+        String normalizedInput = normalizeInput(input);
+        if (normalizedInput.isEmpty()) {
+            return ui.formatError(EMPTY_COMMAND_MESSAGE);
         }
-        
+
         try {
-            Parser.ParsedCommand command = parser.parse(input);
-            String commandWord = command.getCommandWord();
-            String arguments = command.getArguments();
-
-            if ("bye".equals(commandWord)) {
-                isExit = true;
-                return ui.formatBye();
-            }
-
-            return executeCommand(commandWord, arguments);
+            Parser.ParsedCommand command = parser.parse(normalizedInput);
+            return processCommand(command);
         } catch (OrionException e) {
             return ui.formatError(e.getMessage());
         }
@@ -101,6 +104,10 @@ public class Orion {
         new Orion().run();
     }
 
+    private static String normalizeInput(String input) {
+        return (input == null) ? "" : input.trim();
+    }
+
     private static TaskList loadTasks(Storage storage) {
         try {
             ArrayList<Task> loaded = storage.load();
@@ -111,26 +118,39 @@ public class Orion {
         }
     }
 
+    private String processCommand(Parser.ParsedCommand command) throws OrionException {
+        String commandWord = command.getCommandWord();
+        String arguments = command.getArguments();
+
+        if (CMD_BYE.equals(commandWord)) {
+            isExit = true;
+            return ui.formatBye();
+        }
+
+        return executeCommand(commandWord, arguments);
+    }
+
     private String executeCommand(String commandWord, String arguments) throws OrionException {
         switch (commandWord) {
-        case "list":
+        case CMD_LIST:
+            emphasizeNonNullTasks(); // assertion
             return ui.formatList(tasks);
 
-        case "mark":
+        case CMD_MARK:
             return handleMark(arguments, true);
 
-        case "unmark":
+        case CMD_UNMARK:
             return handleMark(arguments, false);
 
-        case "find":
+        case CMD_FIND:
             return handleFind(arguments);
 
-        case "todo":
-        case "deadline":
-        case "event":
+        case CMD_TODO:
+        case CMD_DEADLINE:
+        case CMD_EVENT:
             return handleAddTask(commandWord, arguments);
 
-        case "delete":
+        case CMD_DELETE:
             return handleDelete(arguments);
 
         default:
@@ -139,7 +159,7 @@ public class Orion {
     }
 
     private String handleMark(String arguments, boolean markDone) throws OrionException {
-        String keyword = markDone ? "mark" : "unmark";
+        String keyword = markDone ? CMD_MARK : CMD_UNMARK;
         int index = parser.parseTaskIndex(arguments, keyword, tasks.size());
 
         Task updated = markDone ? tasks.markDone(index) : tasks.markUndone(index);
@@ -168,7 +188,7 @@ public class Orion {
     }
 
     private String handleDelete(String arguments) throws OrionException {
-        int index = parser.parseTaskIndex(arguments, "delete", tasks.size());
+        int index = parser.parseTaskIndex(arguments, CMD_DELETE, tasks.size());
         Task removed = tasks.remove(index);
         saveTasks();
         return ui.formatDelete(removed, tasks.size());
@@ -176,5 +196,9 @@ public class Orion {
 
     private void saveTasks() throws OrionException {
         storage.save(tasks.asUnmodifiableList());
+    }
+
+    private void emphasizeNonNullTasks() {
+        assert tasks != null : "TaskList must be initialized";
     }
 }
