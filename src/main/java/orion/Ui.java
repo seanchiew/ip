@@ -188,10 +188,6 @@ public class Ui {
         return sb.toString();
     }
 
-    /**
-     * Overload for callers that already built a multi-line body string.
-     * Ensures body ends with a newline for consistent framing.
-     */
     private static String framed(String body) {
         assert body != null : "framed(body): body must not be null";
 
